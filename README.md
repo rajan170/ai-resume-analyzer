@@ -58,7 +58,6 @@ ollama pull llama3.2
 ```
 
 ### 5. Start supporting services
-- **MongoDB** – ensure it is running locally (default port 2707)?? Wait keep as 27017.
 - **MongoDB** – ensure it is running locally (default port 27017):
 ```bash
 # macOS with Homebrew

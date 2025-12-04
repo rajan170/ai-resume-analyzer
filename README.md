@@ -33,7 +33,6 @@ cd resume-analyser
 ### 2. Create a `.env` file
 If an example exists, copy it; otherwise create one manually:
 ```bash
-cp .env.example .env   # optional, if the example exists
 # Edit .env to set any custom values (e.g., MONGO_URI)
 # MONGO_URI=mongodb://localhost:27017/
 ```
@@ -41,9 +40,6 @@ cp .env.example .env   # optional, if the example exists
 ### 3. Install dependencies
 We recommend **uv** for fast, deterministic installs:
 ```bash
-# Install uv (skip if already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
 # Install project dependencies
 uv sync
 ```

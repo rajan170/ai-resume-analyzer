@@ -1,0 +1,10 @@
+streamlit
+spacy
+pymongo
+pandas
+python-dotenv
+pydantic
+scikit-learn
+ruff
+pdfplumber
+docx2txt

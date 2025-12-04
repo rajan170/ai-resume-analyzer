@@ -14,7 +14,6 @@ A local, AI-powered recruitment tool built with Streamlit, spaCy, and MongoDB. T
     - **Semantic Search**: Uses `sentence-transformers` to match candidates based on meaning, not just keywords.
     - **Keyword Scoring**: Boosts scores for exact skill matches.
 - **External Job Search**: Integrated search for LinkedIn, Indeed, and other job boards.
-- **Professional UI**: Polished, emoji-free interface with dark/light mode support.
 
 ## Prerequisites
 
@@ -25,43 +24,62 @@ A local, AI-powered recruitment tool built with Streamlit, spaCy, and MongoDB. T
 
 ## Installation & Setup
 
-1. **Clone the Repository**
-   ```bash
-   git clone <repository-url>
-   cd resume-analyser
-   ```
+### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd resume-analyser
+```
 
-2. **Initialize Environment & Install Dependencies**
-   ```bash
-   uv sync
-   ```
+### 2. Create a `.env` file
+If an example exists, copy it; otherwise create one manually:
+```bash
+cp .env.example .env   # optional, if the example exists
+# Edit .env to set any custom values (e.g., MONGO_URI)
+# MONGO_URI=mongodb://localhost:27017/
+```
 
-3. **Setup AI Models**
-   - **spaCy**: Download the English model for parsing.
-     ```bash
-     uv run python -m spacy download en_core_web_sm
-     ```
-   - **Ollama**: Pull the Llama 3.2 model for AI critique.
-     ```bash
-     ollama pull llama3.2
-     ```
+### 3. Install dependencies
+We recommend **uv** for fast, deterministic installs:
+```bash
+# Install uv (skip if already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-4. **Start MongoDB**
-   Ensure your local MongoDB instance is running.
-   ```bash
-   # On macOS with Homebrew
-   brew services start mongodb-community
-   ```
+# Install project dependencies
+uv sync
+```
+If you prefer `pip`:
+```bash
+pip install -r requirements.txt
+```
 
-## Running the Application
+### 4. Download language models
+```bash
+# spaCy English model
+uv run python -m spacy download en_core_web_sm
 
-To start the Streamlit app, run:
+# Ollama LLM (requires Ollama to be installed)
+ollama pull llama3.2
+```
 
+### 5. Start supporting services
+- **MongoDB** – ensure it is running locally (default port 2707)?? Wait keep as 27017.
+- **MongoDB** – ensure it is running locally (default port 27017):
+```bash
+# macOS with Homebrew
+brew services start mongodb-community
+```
+- **Ollama** – start the daemon (usually runs automatically after installation):
+```bash
+ollama serve   # or simply run `ollama` and keep the process alive
+```
+
+### 6. Run the Streamlit app
 ```bash
 uv run streamlit run app.py
 ```
+The application will be available at `http://localhost:8501` in your browser.
 
-The application will open in your default browser at `http://localhost:8501`.
+
 
 ## Usage Guide
 

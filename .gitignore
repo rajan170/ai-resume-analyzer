@@ -71,3 +71,6 @@ dmypy.json
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Miscellaneous
+presentation_outline.md

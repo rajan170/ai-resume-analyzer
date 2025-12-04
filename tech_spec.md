@@ -16,9 +16,9 @@ The system will be a local web application built with Streamlit. It follows a la
 graph TD
     User[Recruiter] -->|Interacts| UI[Streamlit UI]
     UI -->|Uploads Resume| Parser[Resume Parser Engine]
-    UI -->|Request Analysis| LLM[Local LLM (Ollama)]
+    UI -->|Request Analysis| LLM["Local LLM (Ollama)"]
     Parser -->|Extracts Data| Controller[Logic Controller]
-    Controller -->|CRUD Operations| DB[(MongoDB)]
+    Controller -->|CRUD Operations| DB[("MongoDB")]
     Controller -->|Matches| Matcher[Semantic Matching Engine]
     Matcher -->|Reads| DB
     LLM -->|Generates Feedback| UI

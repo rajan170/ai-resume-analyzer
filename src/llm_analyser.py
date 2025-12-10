@@ -100,5 +100,48 @@ Be specific, professional, and constructive. Reference actual content from the r
 """
             return f"Error generating analysis: {e}"
 
+    def analyze_fit(self, resume_text: str, job_description: str) -> str:
+        """
+        Analyzes the fit between a resume and a job description.
+        """
+        prompt = f"""You are an expert Talent Acquisition Specialist. 
+        Compare the following Resume with the Job Description to determine the candidate's fit.
+
+        RESUME:
+        {resume_text[:3000]}
+
+        JOB DESCRIPTION:
+        {job_description[:3000]}
+
+        Provide a structured analysis:
+
+        ### Match Score
+        Estimate a match percentage (0-100%) based on skills and experience alignment.
+
+        ### Key Matching Skills
+        List the top skills from the resume that directly match the JD.
+
+        ### Missing Critical Skills
+        List important skills or requirements from the JD that are missing or weak in the resume.
+
+        ### Experience Alignment
+        Briefly assess if the candidate's experience level (years, role type) fits the role.
+
+        ### Final Recommendation
+        One sentence: Strong Fit, Moderate Fit, or Weak Fit, and why.
+        """
+
+        try:
+            response = ollama.chat(
+                model=self.model,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            return response['message']['content']
+        except Exception as e:
+            error_msg = str(e)
+            if "connection" in error_msg.lower() or "refused" in error_msg.lower():
+                return "Error: Could not connect to Ollama. Please ensure it is running."
+            return f"Error generating fit analysis: {e}"
+
 
 

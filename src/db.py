@@ -34,6 +34,15 @@ class Database:
         self.candidates = self.db.candidates
         self.jobs = self.db.jobs
 
+    def check_connection(self):
+        """Checks if the database is reachable."""
+        try:
+            # The ismaster command is cheap and does not require auth.
+            self.client.admin.command('ismaster')
+            return True
+        except Exception:
+            return False
+
     def insert_candidate(self, candidate_data):
         """Inserts a new candidate profile and returns the MongoDB ObjectId."""
         return self.candidates.insert_one(candidate_data).inserted_id

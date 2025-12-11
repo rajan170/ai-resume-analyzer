@@ -143,5 +143,25 @@ Be specific, professional, and constructive. Reference actual content from the r
                 return "Error: Could not connect to Ollama. Please ensure it is running."
             return f"Error generating fit analysis: {e}"
 
+    def extract_job_title(self, job_description: str) -> str:
+        """
+        Extracts the job title from a job description text using LLM.
+        """
+        prompt = f"""Extract the exact Job Title from the following Job Description.
+        Return ONLY the job title, nothing else. Do not use "Job Title:" prefix.
+        
+        JOB DESCRIPTION:
+        {job_description[:2000]}
+        """
+        
+        try:
+            response = ollama.chat(
+                model=self.model,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            return response['message']['content'].strip()
+        except Exception:
+            return ""
+
 
 

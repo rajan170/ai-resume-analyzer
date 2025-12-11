@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import re
+import html
 from src.parser import ResumeParser
 from src.db import Database
 from src.scorer import ATSScorer
@@ -102,10 +104,17 @@ st.markdown("""
         color: var(--secondary);
     }
 
-    /* Buttons */
+    /* Buttons - Force white text with multiple selectors */
+    .stButton > button,
+    .stButton > button p,
+    .stButton > button span,
+    .stButton button[kind="primary"],
+    .stButton button[kind="secondary"] {
+        color: #FFFFFF !important;
+    }
+    
     .stButton > button {
         background-color: var(--primary);
-        color: white;
         border-radius: 8px;
         font-weight: 600;
         border: none;
@@ -116,6 +125,16 @@ st.markdown("""
     .stButton > button:hover {
         background-color: #1D4ED8;
         border-color: #1D4ED8;
+    }
+    
+    /* Primary Button - ensure white text */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    }
+    
+    /* Secondary Button - readable text */
+    .stButton > button[kind="secondary"] {
+        background-color: #64748B;
     }
     
     .stButton > button:focus {
@@ -176,7 +195,7 @@ def render_metric_card(label, value, help_text=None):
 st.sidebar.markdown("### Navigation")
 page = st.sidebar.radio(
     "Go to",
-    ["Upload Resume", "Candidate Dashboard", "Job Management", "Smart Match"],
+    ["Analysis & Search", "Candidate Dashboard", "Job Management", "Smart Match"],
     label_visibility="collapsed"
 )
 
@@ -184,8 +203,8 @@ page = st.sidebar.radio(
 
 render_header()
 
-if page == "Upload Resume":
-    st.markdown("## 📄 Processing Hub")
+if page == "Analysis & Search":
+    st.markdown("## 📄 Resume Analysis & Job Search")
     
     col1, col2 = st.columns([2, 1])
     
@@ -264,7 +283,7 @@ if page == "Upload Resume":
         st.markdown("---")
         data = st.session_state['resume_data']
         
-        tab1, tab2, tab3 = st.tabs(["AI Critique", "Job Matches", "Raw Data"])
+        tab1, tab2, tab3 = st.tabs(["AI Critique", "Job & LinkedIn Matches", "Raw Data"])
         
         with tab1:
             st.markdown("### AI Career Coach")
@@ -276,28 +295,81 @@ if page == "Upload Resume":
                     st.markdown(critique)
 
         with tab2:
-            st.markdown("### Internal Matches")
-            matcher = JobMatcher()
-            jobs = db.get_all_jobs()
-            matches = matcher.match_jobs(data, jobs) if jobs else []
+            c1, c2 = st.columns(2)
             
-            if matches:
-                 for job in matches[:3]:
-                    match_score = job.get('match_score')
-                    color = "#10B981" if match_score >= 80 else "#64748B"
-                    
-                    st.markdown(f"""
-                    <div class="stCard">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h4 style="margin:0;">{job.get('title')}</h4>
-                            <span style="background:{color}; color:white; padding:4px 12px; border-radius:12px; font-size:0.8rem;">{match_score}% Match</span>
+            with c1:
+                st.markdown("### Internal Matches")
+                matcher = JobMatcher()
+                jobs = db.get_all_jobs()
+                matches = matcher.match_jobs(data, jobs) if jobs else []
+                
+                if matches:
+                     for job in matches[:3]:
+                        match_score = job.get('match_score')
+                        color = "#10B981" if match_score >= 80 else "#64748B"
+                        
+                        st.markdown(f"""
+                        <div class="stCard">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h4 style="margin:0;">{job.get('title')}</h4>
+                                <span style="background:{color}; color:white; padding:4px 12px; border-radius:12px; font-size:0.8rem;">{match_score}% Match</span>
+                            </div>
+                            <p style="margin-top:0.5rem; font-size:0.9rem;">{job.get('department')}</p>
+                            <p style="font-size:0.875rem; color:#64748B;">{job.get('description')[:150]}...</p>
                         </div>
-                        <p style="margin-top:0.5rem; font-size:0.9rem;">{job.get('department')}</p>
-                        <p style="font-size:0.875rem; color:#64748B;">{job.get('description')[:150]}...</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.info("No strong internal matches found.")
+                        """, unsafe_allow_html=True)
+                else:
+                    st.info("No strong internal matches found.")
+
+            with c2:
+                st.markdown("### External Job Search")
+                
+                # Search filters in an expander for cleaner UI
+                with st.expander("⚙️ Search Filters", expanded=False):
+                    location_ext = st.text_input("Location", placeholder="e.g., San Francisco, Remote", key="ext_loc")
+                    remote_ext = st.checkbox("Remote only", key="ext_remote")
+                    num_ext = st.slider("Number of results", 3, 10, 5, key="ext_num")
+                
+                if st.button("🔍 Search Job Boards", type="secondary", use_container_width=True, key="ext_search_btn"):
+                    with st.spinner("Searching LinkedIn and Indeed..."):
+                        from src.external_search import ExternalJobSearch
+                        ext_search = ExternalJobSearch()
+                        ext_jobs = ext_search.recommend_jobs(
+                            skills=data.get("skills", []), 
+                            job_title=data.get("job_title"),
+                            location=location_ext if location_ext else None,
+                            remote_only=remote_ext,
+                            limit=num_ext
+                        )
+                        st.session_state['ext_search_results'] = ext_jobs
+                
+                # Display external search results
+                if st.session_state.get('ext_search_results'):
+                    for job in st.session_state['ext_search_results']:
+                        # Build metadata
+                        meta_parts = []
+                        if job.get('location') != "Not specified":
+                            meta_parts.append(f"📍 {job.get('location')}")
+                        if job.get('is_remote'):
+                            meta_parts.append("🏠 Remote")
+                        meta_str = " • ".join(meta_parts) if meta_parts else ""
+                        
+                        # Clean snippet
+                        snippet = job.get('snippet', '')
+                        snippet = html.unescape(snippet)  # Decode HTML entities first
+                        snippet = re.sub(r'<[^>]+>', '', snippet)  # Remove HTML tags
+                        snippet = snippet.replace('&nbsp;', ' ').strip()
+                        
+                        # Build HTML without newlines
+                        html_card = f'<div style="border-left: 4px solid #0077B5; padding: 1rem; margin: 0.5rem 0; background: white; border-radius: 4px;"><a href="{job.get("link")}" target="_blank" style="text-decoration:none; color:#0F172A;"><h4 style="margin:0; color:#0077B5;">{job.get("title")} <span style="font-size:0.8rem;">↗</span></h4></a>'
+                        if meta_str:
+                            html_card += f'<p style="font-size:0.8rem; color:#94A3B8; margin:0.25rem 0;">{meta_str}</p>'
+                        html_card += f'<p style="font-size:0.875rem; color:#64748B; margin-top:0.5rem;">{snippet[:120]}...</p></div>'
+                        
+                        st.markdown(html_card, unsafe_allow_html=True)
+                elif 'ext_search_results' in st.session_state:
+                    st.info("No jobs found. Try different filters.")
+
 
         with tab3:
             st.text_area("Extracted Text", data.get("raw_text"), height=300)
@@ -404,7 +476,8 @@ elif page == "Smart Match":
     
     resume_txt = ""
     jd_txt = ""
-    
+    resume_data = {}
+
     with c1:
         st.markdown("### 1. Resume Source")
         tabs = st.tabs(["Upload", "Paste"])
@@ -415,7 +488,8 @@ elif page == "Smart Match":
                     st.error("File > 2MB")
                 else:
                     parser = ResumeParser()
-                    resume_txt = parser.parse(f, f.name.split(".")[-1]).get("raw_text", "")
+                    resume_data = parser.parse(f, f.name.split(".")[-1])
+                    resume_txt = resume_data.get("raw_text", "")
                     st.success("Loaded!")
         with tabs[1]:
             t = st.text_area("Paste Text", height=200)
@@ -443,7 +517,109 @@ elif page == "Smart Match":
                 with st.spinner("Analyzing fit..."):
                     from src.llm_analyser import LLMAnalyser
                     res = LLMAnalyser().analyze_fit(resume_txt, jd_txt)
-                    st.markdown("### 📋 Fit Report")
-                    st.markdown(res)
+                    
+                    # Store current job info
+                    current_job_title = None
+                    if 'sel' in locals() and sel:
+                        current_job_title = sel.get('title')
+                    elif jd_txt:
+                        # Extract title from pasted text using LLM
+                        current_job_title = LLMAnalyser().extract_job_title(jd_txt)
+                    
+                    # Store in session state
+                    st.session_state['smart_match_result'] = res
+                    st.session_state['smart_match_resume_data'] = resume_data
+                    st.session_state['smart_match_job_title'] = current_job_title
+                    st.session_state['smart_match_selected_job'] = sel if 'sel' in locals() else None
+    
+    # Display results from session state if available
+    if 'smart_match_result' in st.session_state:
+        st.markdown("### 📋 Fit Report")
+        st.markdown(st.session_state['smart_match_result'])
+        
+        st.markdown("---")
+        st.markdown("### 🔎 External Job Search")
+        
+        # Get resume data from session state
+        saved_resume_data = st.session_state.get('smart_match_resume_data', {})
+        saved_job = st.session_state.get('smart_match_selected_job')
+        saved_job_title = st.session_state.get('smart_match_job_title')  # NEW: Get stored job title
+        
+        search_skills = saved_resume_data.get("skills", [])
+        search_title = saved_resume_data.get("job_title")
+        
+        # Fallback 1: Use job description title if no resume title
+        if not search_title and saved_job_title:
+            search_title = saved_job_title
+        
+        # Fallback 2: Try from selected job object
+        if not search_title and saved_job:
+            search_title = saved_job.get('title')
+        
+        # Show hint if no data available
+        if not search_title and not search_skills:
+            st.warning("⚠️ No resume or job data found. Please run 'Match Analysis' first to extract skills and job title.")
+        
+        # Search filters
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
+            # Allow user to override the search title
+            final_search_title = st.text_input("Job Title", value=search_title if search_title else "")
+        with col_f2:
+            location_input = st.text_input("Location", placeholder="e.g., New York, Remote")
+            
+        with col_f3:
+            num_results = st.slider("Results", 3, 15, 5)
+        
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            remote_only = st.checkbox("Remote only")
+        with col_c2:
+            posted_last_24h = st.checkbox("Posted last 24h")
+        
+        if st.button("🔍 Search Job Boards", key="linkedin_search_btn", type="primary", use_container_width=True):
+            with st.spinner("Searching LinkedIn and Indeed..."):
+                from src.external_search import ExternalJobSearch
+                ext = ExternalJobSearch()
+                results = ext.recommend_jobs(
+                    skills=search_skills,
+                    job_title=final_search_title, # Use the input value
+                    location=location_input if location_input else None,
+                    remote_only=remote_only,
+                    posted_last_24h=posted_last_24h,
+                    limit=num_results
+                )
+                
+                # Store results in session state
+                st.session_state['linkedin_results'] = results
+        
+        # Display job results if available
+        if 'linkedin_results' in st.session_state and st.session_state['linkedin_results']:
+            st.markdown(f"#### Found {len(st.session_state['linkedin_results'])} Jobs")
+            for job in st.session_state['linkedin_results']:
+                # Build metadata line
+                metadata_parts = []
+                if job.get('location') != "Not specified":
+                    metadata_parts.append(f"📍 {job.get('location')}")
+                if job.get('is_remote'):
+                    metadata_parts.append("🏠 Remote")
+                
+                metadata_str = " • ".join(metadata_parts) if metadata_parts else ""
+                
+                # Clean snippet - remove HTML tags
+                snippet = job.get('snippet', '')
+                snippet = html.unescape(snippet)  # Decode HTML entities first
+                snippet = re.sub(r'<[^>]+>', '', snippet)  # Remove HTML tags
+                snippet = snippet.replace('&nbsp;', ' ').strip()  # Clean entities
+                
+                # Build HTML string without newlines to prevent code block rendering
+                html_card = f'<div style="border-left: 4px solid #0077B5; padding: 1rem; margin: 0.5rem 0; background: white; border-radius: 4px;"><a href="{job.get("link")}" target="_blank" style="text-decoration:none; color:#0F172A;"><h4 style="margin:0; color:#0077B5;">{job.get("title")} <span style="font-size:0.8rem;">↗</span></h4></a>'
+                if metadata_str:
+                    html_card += f'<p style="font-size:0.8rem; color:#94A3B8; margin:0.25rem 0;">{metadata_str}</p>'
+                html_card += f'<p style="font-size:0.875rem; color:#64748B; margin-top:0.5rem;">{snippet[:150]}...</p></div>'
+                
+                st.markdown(html_card, unsafe_allow_html=True)
+        elif 'linkedin_results' in st.session_state:
+            st.info("No jobs found with these criteria. Try adjusting your filters or location.")
 
 

@@ -163,5 +163,26 @@ Be specific, professional, and constructive. Reference actual content from the r
         except Exception:
             return ""
 
+    def extract_title_from_resume(self, resume_text: str) -> str:
+        """
+        Extracts the candidate's current or most recent job title from resume text using LLM.
+        """
+        prompt = f"""Extract the candidate's current or most recent Job Title from the following Resume text.
+        Return ONLY the job title, nothing else. Do not use "Job Title:" prefix. 
+        If no clear job title is found, return "Professional".
+        
+        RESUME TEXT:
+        {resume_text[:2000]}
+        """
+        
+        try:
+            response = ollama.chat(
+                model=self.model,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            return response['message']['content'].strip()
+        except Exception:
+            return ""
+
 
 

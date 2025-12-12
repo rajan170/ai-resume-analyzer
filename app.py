@@ -230,6 +230,16 @@ if page == "Analysis & Search":
                         parser = ResumeParser()
                         file_type = uploaded_file.name.split(".")[-1]
                         data = parser.parse(uploaded_file, file_type)
+
+                        # Enhanced Title Extraction using LLM
+                        from src.llm_analyser import LLMAnalyser
+                        try:
+                            llm_analyser = LLMAnalyser()
+                            refined_title = llm_analyser.extract_title_from_resume(data.get("raw_text", ""))
+                            if refined_title and refined_title != "Professional":
+                                data["job_title"] = refined_title
+                        except Exception as e:
+                            print(f"LLM Title Extraction failed: {e}")
                         
                         # Scoring
                         scorer = ATSScorer()
@@ -323,6 +333,7 @@ if page == "Analysis & Search":
 
             with c2:
                 st.markdown("### External Job Search")
+                st.markdown(f"**Target Role:** {data.get('job_title', 'Not found')}")
                 
                 # Search filters in an expander for cleaner UI
                 with st.expander("⚙️ Search Filters", expanded=False):

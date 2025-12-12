@@ -8,3 +8,5 @@ scikit-learn
 ruff
 pdfplumber
 docx2txt
+ollama
+duckduckgo-search

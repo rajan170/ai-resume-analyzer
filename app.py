@@ -204,7 +204,7 @@ page = st.sidebar.radio(
 render_header()
 
 if page == "Analysis & Search":
-    st.markdown("## 📄 Resume Analysis & Job Search")
+    st.markdown("## Resume Analysis & Job Search")
     
     col1, col2 = st.columns([2, 1])
     
@@ -223,7 +223,7 @@ if page == "Analysis & Search":
         )
 
         if uploaded_file:
-            if st.button("🚀 Process Resume", type="primary"):
+            if st.button("Process Resume", type="primary"):
                 with st.spinner("Extracting data and running AI analysis..."):
                     try:
                         # Parsing
@@ -297,7 +297,7 @@ if page == "Analysis & Search":
         
         with tab1:
             st.markdown("### AI Career Coach")
-            if st.button("✨ Generate Critique"):
+            if st.button("Generate Critique"):
                 with st.spinner("Consulting LLM..."):
                     from src.llm_analyser import LLMAnalyser
                     llm = LLMAnalyser()
@@ -336,12 +336,12 @@ if page == "Analysis & Search":
                 st.markdown(f"**Target Role:** {data.get('job_title', 'Not found')}")
                 
                 # Search filters in an expander for cleaner UI
-                with st.expander("⚙️ Search Filters", expanded=False):
+                with st.expander("Search Filters", expanded=False):
                     location_ext = st.text_input("Location", placeholder="e.g., San Francisco, Remote", key="ext_loc")
                     remote_ext = st.checkbox("Remote only", key="ext_remote")
                     num_ext = st.slider("Number of results", 3, 10, 5, key="ext_num")
                 
-                if st.button("🔍 Search Job Boards", type="secondary", use_container_width=True, key="ext_search_btn"):
+                if st.button("Search Job Boards", type="secondary", use_container_width=True, key="ext_search_btn"):
                     with st.spinner("Searching LinkedIn and Indeed..."):
                         from src.external_search import ExternalJobSearch
                         ext_search = ExternalJobSearch()
@@ -360,9 +360,9 @@ if page == "Analysis & Search":
                         # Build metadata
                         meta_parts = []
                         if job.get('location') != "Not specified":
-                            meta_parts.append(f"📍 {job.get('location')}")
+                            meta_parts.append(f"Location: {job.get('location')}")
                         if job.get('is_remote'):
-                            meta_parts.append("🏠 Remote")
+                            meta_parts.append("Remote")
                         meta_str = " • ".join(meta_parts) if meta_parts else ""
                         
                         # Clean snippet
@@ -386,7 +386,7 @@ if page == "Analysis & Search":
             st.text_area("Extracted Text", data.get("raw_text"), height=300)
 
 elif page == "Candidate Dashboard":
-    st.markdown("## 👥 Candidate Repository")
+    st.markdown("## Candidate Repository")
     
     candidates = db.get_all_candidates()
     
@@ -441,14 +441,14 @@ elif page == "Candidate Dashboard":
     if 'selected_candidate' in st.session_state:
         cand = st.session_state['selected_candidate']
         st.markdown("---")
-        st.markdown(f"### 🔍 Profile Detail: {cand.get('name')}")
+        st.markdown(f"### Profile Detail: {cand.get('name')}")
         st.json(cand)
         if st.button("Close Viewer"):
             del st.session_state['selected_candidate']
             st.rerun()
 
 elif page == "Job Management":
-    st.markdown("## 💼 Job Postings")
+    st.markdown("## Job Postings")
     
     with st.form("new_job"):
         st.markdown("### Create New Opening")
@@ -480,7 +480,7 @@ elif page == "Job Management":
         """, unsafe_allow_html=True)
 
 elif page == "Smart Match":
-    st.markdown("## 🎯 Smart Match")
+    st.markdown("## Smart Match")
     st.markdown("Compare any resume against a job description instantly.")
     
     c1, c2 = st.columns(2)
@@ -545,11 +545,11 @@ elif page == "Smart Match":
     
     # Display results from session state if available
     if 'smart_match_result' in st.session_state:
-        st.markdown("### 📋 Fit Report")
+        st.markdown("### Fit Report")
         st.markdown(st.session_state['smart_match_result'])
         
         st.markdown("---")
-        st.markdown("### 🔎 External Job Search")
+        st.markdown("### External Job Search")
         
         # Get resume data from session state
         saved_resume_data = st.session_state.get('smart_match_resume_data', {})
@@ -569,7 +569,7 @@ elif page == "Smart Match":
         
         # Show hint if no data available
         if not search_title and not search_skills:
-            st.warning("⚠️ No resume or job data found. Please run 'Match Analysis' first to extract skills and job title.")
+            st.warning("No resume or job data found. Please run 'Match Analysis' first to extract skills and job title.")
         
         # Search filters
         col_f1, col_f2, col_f3 = st.columns(3)
@@ -588,7 +588,7 @@ elif page == "Smart Match":
         with col_c2:
             posted_last_24h = st.checkbox("Posted last 24h")
         
-        if st.button("🔍 Search Job Boards", key="linkedin_search_btn", type="primary", use_container_width=True):
+        if st.button("Search Job Boards", key="linkedin_search_btn", type="primary", use_container_width=True):
             with st.spinner("Searching LinkedIn and Indeed..."):
                 from src.external_search import ExternalJobSearch
                 ext = ExternalJobSearch()
@@ -611,9 +611,9 @@ elif page == "Smart Match":
                 # Build metadata line
                 metadata_parts = []
                 if job.get('location') != "Not specified":
-                    metadata_parts.append(f"📍 {job.get('location')}")
+                    metadata_parts.append(f"Location: {job.get('location')}")
                 if job.get('is_remote'):
-                    metadata_parts.append("🏠 Remote")
+                    metadata_parts.append("Remote")
                 
                 metadata_str = " • ".join(metadata_parts) if metadata_parts else ""
                 

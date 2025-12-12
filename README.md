@@ -2,7 +2,7 @@
 
 A local, AI-powered recruitment platform built with Streamlit, spaCy, and MongoDB. This application automates resume parsing, candidate management, and intelligent job matching using semantic search and local LLMs.
 
-## ✨ Features
+## Features
 
 ### Resume Analysis
 - **Intelligent Parsing**: Automatically extracts Name, Email, Phone, Skills, and Job Title from PDF and DOCX resumes using spaCy NLP
@@ -32,7 +32,7 @@ A local, AI-powered recruitment platform built with Streamlit, spaCy, and MongoD
 - **Auto-Query Generation**: Automatically builds search queries from candidate profiles or job requirements
 - **Clean Results Display**: HTML-cleaned job listings with direct links to applications
 
-## 🏗️ Architecture
+## Architecture
 
 The application follows a clean, layered architecture:
 
@@ -45,14 +45,14 @@ The application follows a clean, layered architecture:
   - **External Search** (`src/external_search.py`): Multi-platform job board search integration
 - **Data Layer**: MongoDB for flexible, schema-free storage of candidates and jobs
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Python 3.12+**
 - **MongoDB**: Must be installed and running locally on port `27017`
 - **Ollama**: Required for AI-powered features. [Download Ollama](https://ollama.ai)
 - **uv**: Fast Python package manager (recommended) or pip
 
-##  🚀 Installation & Setup
+##  Installation & Setup
 
 ### 1. Clone the repository
 ```bash
@@ -112,7 +112,7 @@ uv run streamlit run app.py
 
 The application will be available at `http://localhost:8501` in your browser.
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Analysis & Search Page
 1. **Upload Resume**: Drag and drop a PDF/DOCX file (max 2MB)
@@ -143,7 +143,7 @@ The application will be available at `http://localhost:8501` in your browser.
 4. **Match Report**: Review detailed analysis including match score, matching skills, gaps, and recommendations
 5. **External Search**: Automatically search LinkedIn and Indeed with extracted skills and job title
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 resume-analyser/
@@ -163,7 +163,7 @@ resume-analyser/
 └── .env                       # Environment variables (not committed)
 ```
 
-## 🎨 Features in Detail
+## Features in Detail
 
 ### ATS Scoring Algorithm
 The scorer evaluates resumes on a 0-100 scale:
@@ -214,14 +214,14 @@ Hybrid approach combining AI and rules:
 }
 ```
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **100% Local Processing**: All sensitive data processing happens on your machine
 - **No Cloud Dependencies**: No external API calls for resume analysis (Ollama runs locally)
 - **MongoDB Local**: Database runs on your infrastructure with optional authentication
 - **GDPR-Ready**: Complete control over data retention and deletion
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 **Backend:**
 - Python 3.12+
@@ -239,7 +239,7 @@ Hybrid approach combining AI and rules:
 - MongoDB - NoSQL database for flexible schema
 - pandas - Data manipulation and display
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **MongoDB Connection Error:**
 ```bash
@@ -270,15 +270,15 @@ ollama serve
 python -m spacy download en_core_web_sm --no-cache-dir
 ```
 
-## 🤝 Contributing
+## Contributing
 
 This is a local recruitment tool designed for privacy and control. Feel free to fork and customize for your specific needs.
 
-## 📄 License
+## License
 
 MIT License - Feel free to use and modify for your recruitment needs.
 
-## 🚀 Future Enhancements
+## Future Enhancements
 
 - Batch resume processing
 - Email notifications for new matches
